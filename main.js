@@ -51,7 +51,7 @@ client.on('message', async message => { //when a message is delivered, create th
 		client.commands.get('kitzur').execute(message, args, animeBabesID);
 	}else if(command === 'why'){
 		client.commands.get('why').execute(message, args, animeBabesID);
-	}else if(command === 'play' || command === 'stop' || command === 'skip' || command === 'queue' || command === 'remove' || command === 'move' || command === 'playing' || command === 'back' || command === 'music' || command === 'restart' || command === 'pause' || command === 'resume' || command === 'unpause'){
+	}else if(command === 'play' || command === 'stop' || command === 'skip' || command === 'queue' || command === 'remove' || command === 'move' || command === 'playing' || command === 'back' || command === 'music' || command === 'restart' || command === 'pause' || command === 'resume' || command === 'unpause' || command === 'loop'){
 		client.commands.get('music').execute(command, message, args, ytdl, yts, queue, serverQueue, arrayMove);
 	}else if(command === 'when'){
 		client.commands.get('when').execute(message, args, animeBabesID);
