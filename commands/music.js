@@ -183,9 +183,9 @@ function moveCommand(message, argsJoined, serverQueue, arrayMove){
 async function backCommand(message, ytdl, queue, serverQueue, arrayMove){
 	if(!message.member.voice.channel) return message.reply('You need to be in a voice channel to use the back command!') //checks if user is in a channel
 	if(previousSongs.checkEmpty() === undefined) return message.reply('There are no songs to go back to!');
-	if(serverQueue.loop) return message.reply('You cannot go back while the queue is looping! "rbh loop" to disable looping');
 	if(serverQueue){
 		if(serverQueue.voiceChannel != message.member.voice.channel) return message.reply('You are not in my voice channel!');
+		if(serverQueue.loop) return message.reply('You cannot go back while the queue is looping! "rbh loop" to disable looping');
 
 		var grabbedSong = previousSongs.grabPrevious();
 		serverQueue.songs.splice(0,0, grabbedSong);
