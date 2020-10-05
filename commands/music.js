@@ -115,7 +115,7 @@ function queueCommand(message, serverQueue){
 	if(!serverQueue) return message.channel.send('There are no songs in the queue!');//checks if you are in a channel
 	if(!serverQueue.connection) return message.reply('There is an error with the connection');
 
-	let queueList = 'Songs in the queue:';
+	let queueList = `Songs in the queue (looping ${serverQueue.loop ? `**enabled**` : `**disabled**`}):`;
 	var totalTime = 0;
 			
 	serverQueue.songs.forEach((f, i) => { //loops through each song
@@ -183,6 +183,7 @@ function moveCommand(message, argsJoined, serverQueue, arrayMove){
 async function backCommand(message, ytdl, queue, serverQueue, arrayMove){
 	if(!message.member.voice.channel) return message.reply('You need to be in a voice channel to use the back command!') //checks if user is in a channel
 	if(previousSongs.checkEmpty() === undefined) return message.reply('There are no songs to go back to!');
+	if(serverQueue.loop) return message.reply('You cannot go back while the queue is looping! "rbh loop" to disable looping');
 	if(serverQueue){
 		if(serverQueue.voiceChannel != message.member.voice.channel) return message.reply('You are not in my voice channel!');
 
