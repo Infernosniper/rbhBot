@@ -4,7 +4,7 @@ module.exports = {
 	async execute(message, args, Discord){
 		var nekoList = require('../otherFiles/nekoImages.json');
 
-		const embed = new Discrd.MessageEmbed();
+		const embed = new Discord.MessageEmbed();
 		embed.setTitle('Meir Stop Being a Horny Teen');
 		embed.setFooter('RBH is your eternal creator, never forget it.');
 		embed.setTimestamp();
