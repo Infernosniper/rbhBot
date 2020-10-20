@@ -43,15 +43,15 @@ async function playCommand(message, serverQueue, args, queue, Discord){
  
 	if(!voiceChannel) return message.reply('You are not in a voice channel!');
 
-	if(ytpl.validateID(args[0])){
+	if(ytpl.validateID(args[0])){ //all of the code for if it is a playlist
 		await message.react('🇼'); //displays wait in emoji reactions
 		await message.react('🇦');
 		await message.react('🇮');
 		await message.react('🇹');
 
-		var numToAdd = 5;
-		var modifier;
-		var randomizer = false;
+		let numToAdd = 5;
+		let modifier;
+		let randomizer = false;
 
 		if(args.length > 1) modifier = args[1];
 
@@ -59,11 +59,10 @@ async function playCommand(message, serverQueue, args, queue, Discord){
 		else if(modifier && !isNaN(modifier)) numToAdd = modifier; //if modifier is number of songs to add
 
 		searchString = args[0];
-		let videos;
 
-		try{
-			const playlist = await youtube.getPlaylist(searchString);
-			videos = await playlist.getVideos()
+		try{ 
+			const playlist = await youtube.getPlaylist(searchString); //grab playlist
+			var videos = await playlist.getVideos(); //make an array of videos from the playlist
 		}catch (error){
 			console.log(`Error grabbing from youtube: ${error}`);
 			message.channel.send('There was an error grabbing the youtube results, try again.');
@@ -71,12 +70,12 @@ async function playCommand(message, serverQueue, args, queue, Discord){
 		
 		if(numToAdd > videos.length) numToAdd = videos.length;
 
-		for(var i = 0; i < numToAdd; i++){
-			try{	
-				var curVid;
-				if(randomizer) curVid = await youtube.getVideoByID(videos[Math.floor(Math.random() * videos.length)].id);
-				else curVid = await youtube.getVideoByID(videos[i].id);
-				await handleVideo(curVid, message, voiceChannel, queue, Discord, true);
+		for(let i = 0; i < numToAdd; i++){
+			let curVid;
+			try{ //try to grab video at i, or from a random spot if randomizesr
+				if(randomizer) curVid = await youtube.getVideoByID(videos[Math.floor(Math.random() * videos.length)].id); //grab a random vid from the playlsit
+				else curVid = await youtube.getVideoByID(videos[i].id); //grab vid i from the playlist
+				await handleVideo(curVid, message, voiceChannel, queue, Discord, true); //handle the video
 			}catch{ //give it a second attempt, because sometimes there is a one-off error
 				try{
 					if(randomizer) curVid = await youtube.getVideoByID(videos[Math.floor(Math.random() * videos.length)].id);
@@ -86,16 +85,18 @@ async function playCommand(message, serverQueue, args, queue, Discord){
 				}
 			}
 		}
-		message.reactions.removeAll(); //done loading...
+
+		message.reactions.removeAll(); //remove "wait" emojis
 		return message.react('👍');
-	} else{
+
+	} else{ //if it isn't a playlist
 		searchString = args.join(' ');
 		try{
-			var video = await youtube.getVideoByID(searchString);
+			var video = await youtube.getVideoByID(searchString); //this checks if the vid is a url
 		}catch{
-			try{
-				var videos = await youtube.searchVideos(searchString, 1);
-				var video = await youtube.getVideoByID(videos[0].id)
+			try{ //if it isn't a url, it must be a title.
+				const videos = await youtube.searchVideos(searchString, 1); //grbs search results for the string
+				var video = await youtube.getVideoByID(videos[0].id) //takes the first video from the list of returned search results
 			} catch(error){
 				console.log(error);
 				return message.channel.send('No results found!');
