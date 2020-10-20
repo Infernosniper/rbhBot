@@ -48,7 +48,7 @@ client.on('message', async message => { //when a message is delivered, create th
 	}else if(command === 'join'){
 		client.commands.get('join').execute(message, args, serverQueue);
 	}else if(command === 'abarbanel'){
-		client.commands.get('abarbanel').execute(message, args, ytdl, yts, queue, serverQueue, client, animeBabesID);
+		client.commands.get('abarbanel').execute(message, args, queue, serverQueue, client, animeBabesID, Discord);
 	}else if(command === 'kitzur'){
 		client.commands.get('kitzur').execute(message, args, animeBabesID, Discord);
 	}else if(command === 'why'){

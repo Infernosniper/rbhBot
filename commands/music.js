@@ -220,7 +220,7 @@ function restartCommand(message, serverQueue, queue, Discord){
 	if(serverQueue.voiceChannel != message.member.voice.channel) return message.reply('You are not in my voice channel!');
 
 	try{
-		play(message, serverQueue.songs[0], queue, Discord, true);
+		play(message, serverQueue.songs[0], queue, true, Discord);
 		message.react('⏪');
 	}catch(error){
 		message.channel.send('There was an error restarting!');
