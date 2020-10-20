@@ -24,7 +24,7 @@ module.exports = {
 		var response = 'When ' + answers[Math.floor(Math.random() * answers.length)];
 
 		const embed = new Discord.MessageEmbed();
-		embed.setTitle(args.join(' '));
+		embed.setTitle(`When ${args.join(' ')}`);
 		embed.setColor('#d92800');
 		embed.setFooter('RBH is your eternal creator, never forget it.')
 		embed.setTimestamp();
