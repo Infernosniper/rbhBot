@@ -44,6 +44,11 @@ async function playCommand(message, serverQueue, args, queue, Discord){
 	if(!voiceChannel) return message.reply('You are not in a voice channel!');
 
 	if(ytpl.validateID(args[0])){
+		await message.react('🇼'); //displays wait in emoji reactions
+		await message.react('🇦');
+		await message.react('🇮');
+		await message.react('🇹');
+
 		var numToAdd = 5;
 		var modifier;
 		var randomizer = false;
@@ -75,6 +80,7 @@ async function playCommand(message, serverQueue, args, queue, Discord){
 			}catch{
 			}
 		}
+		message.reactions.removeAll(); //done loading...
 		return message.react('👍');
 	} else{
 		searchString = args.join(' ');
