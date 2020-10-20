@@ -45,9 +45,15 @@ async function playCommand(message, serverQueue, args, queue, Discord){
 
 	if(ytpl.validateID(args[0])){
 		var numToAdd = 5;
-		if(args.length === 2) numToAdd = args.pop();
+		var modifier;
+		var randomizer = false;
 
-		searchString = args[0]
+		if(args.length > 1) modifier = args[1];
+
+		if(modifier && isNaN(modifier) && modifier.toLowerCase() === 'random') randomizer = true; //if modifier is "random"
+		else if(modifier && !isNaN(modifier)) numToAdd = modifier; //if modifier is number of songs to add
+
+		searchString = args[0];
 		let videos;
 
 		try{
@@ -62,7 +68,9 @@ async function playCommand(message, serverQueue, args, queue, Discord){
 
 		for(var i = 0; i < numToAdd; i++){
 			try{	
-				var curVid = await youtube.getVideoByID(videos[i].id);
+				var curVid;
+				if(randomizer) curVid = await youtube.getVideoByID(videos[Math.floor(Math.random() * videos.length)].id);
+				else curVid = await youtube.getVideoByID(videos[i].id);
 				await handleVideo(curVid, message, voiceChannel, queue, Discord, true);
 			}catch{
 			}
@@ -315,7 +323,7 @@ function commandsList(message, Discord){
 	embed.setFooter('RBH is your eternal creator, never forget it.');
 	embed.setTimestamp();
 	embed.addFields(
-		{name: 'Play', value: 'Plays a song based on input. Follows the format "rbh <arg>" and accepts a title, url, or playlist url. Note: When using a playlist URL, by default I will only add the first 5 seconds of the playlist to the queue. To add a different number of songs to the queue, type "rbh play <playlist_url> <num_songs_to_add>".'},
+		{name: 'Play', value: `Plays a song based on input. Follows the format "rbh <arg>" and accepts a title, url, or playlist url. **Note**: When using a playlist URL, by default I will only add the first 5 songs of the playlist to the queue. To add a different number of songs to the queue, type "rbh play <playlist_url> <num_songs_to_add>". If you want random songs from a playlist, use "rbh play <playlist_url> random". You cannot combine keyboard random and <num_songs> modifiers.`},
 		{name: 'Queue', value: 'Displays the queue of songs. Follows the format "rbh queue".'},
 		{name: 'Playing', value: 'Displays the current song that is playing. Follows the format "rbh playling".'},
 		{name: 'Stop', value: 'Stops the current song and clears the queue. Follows the format "rbh stop".'},
