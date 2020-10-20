@@ -9,6 +9,7 @@ module.exports = {
 		embed.setFooter('RBH is your eternal creator, never forget it.');
 		embed.setTimestamp();
 		embed.setImage(nekoList[Math.floor(Math.random() * nekoList.length)]);
+		embed.setColor('#d92800');
 
 		message.channel.send(embed);
 	}
