@@ -77,7 +77,13 @@ async function playCommand(message, serverQueue, args, queue, Discord){
 				if(randomizer) curVid = await youtube.getVideoByID(videos[Math.floor(Math.random() * videos.length)].id);
 				else curVid = await youtube.getVideoByID(videos[i].id);
 				await handleVideo(curVid, message, voiceChannel, queue, Discord, true);
-			}catch{
+			}catch{ //give it a second attempt, because sometimes there is a one-off error
+				try{
+					if(randomizer) curVid = await youtube.getVideoByID(videos[Math.floor(Math.random() * videos.length)].id);
+					else curVid = await youtube.getVideoByID(videos[i].id);
+					await handleVideo(curVid, message, voiceChannel, queue, Discord, true);
+				}catch{
+				}
 			}
 		}
 		message.reactions.removeAll(); //done loading...
