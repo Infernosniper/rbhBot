@@ -125,7 +125,7 @@ function queueCommand(message, serverQueue, Discord){
 			embed.setTitle(`Songs in queue cont. :`);
 		}
 		//adds the title, durations, and time to play to the queueList string
-		var nextEntry = `**${serverQueue.songs[i].title}** - ${serverQueue.songs[i].duration.hours > 0 ? `${serverQueue.songs[i].duration.hours}:` : ``}${serverQueue.songs[i].duration.minutes}:${String(serverQueue.songs[i].duration.seconds).length === 1 ? `0` : ``}${serverQueue.songs[i].duration.seconds} - ${i == 0 ? 'Now playing' : `Time to play: ${timeToPlayMinutes}:${String(TimeToPlaySeconds).length === 1 ? `0` : ``}${TimeToPlaySeconds}`}\n`
+		var nextEntry = `**${serverQueue.songs[i].title}** - ${serverQueue.songs[i].duration.hours > 0 ? `${serverQueue.songs[i].duration.hours}:` : ``}${String(serverQueue.songs[i].duration.minutes).length === 1 ? `0` : ``}${serverQueue.songs[i].duration.minutes}:${String(serverQueue.songs[i].duration.seconds).length === 1 ? `0` : ``}${serverQueue.songs[i].duration.seconds} - ${i == 0 ? 'Now playing' : `Time to play: ${timeToPlayMinutes}:${String(TimeToPlaySeconds).length === 1 ? `0` : ``}${TimeToPlaySeconds}`}\n`
 		embed.addField(`Song ${i + 1}`, nextEntry);
 
 		if(i != 0){
@@ -148,7 +148,7 @@ function playingCommand(message, serverQueue, Discord){
 	var elapsedMinutes = Math.trunc(elapsedTime / 60);
 	var elapsedSeconds = elapsedTime % 60;
 
-	var nowPlayingText = `**${serverQueue.songs[0].title}** - ${elapsedMinutes}:${elapsedSeconds}/${serverQueue.songs[0].duration.minutes}:${serverQueue.songs[0].duration.seconds}`;
+	var nowPlayingText = `**${serverQueue.songs[0].title}** - ${String(elapsedMinutes).length === 1 ? '0' : ''}${elapsedMinutes}:${String(elapsedSeconds).length === 1 ? '0' : ''}${elapsedSeconds}/${String(serverQueue.songs[0].duration.minutes).length === 1 ? '0' : ''}${serverQueue.songs[0].duration.minutes}:${String(serverQueue.songs[0].duration.seconds).length === 1 ? '0' : ''}${serverQueue.songs[0].duration.seconds}`;
 	
 	const embed = new Discord.MessageEmbed();
 	embed.setTitle(`Now Playing${!serverQueue.playing ? ` **PAUSED**` : ``}`);
