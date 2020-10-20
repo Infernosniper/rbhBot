@@ -107,8 +107,8 @@ function queueCommand(message, serverQueue, Discord){
 	var elapsedTime = Math.trunc(serverQueue.connection.dispatcher.streamTime / 1000);
 	var elapsedMinutes = Math.trunc(elapsedTime / 60);
 	var elapsedSeconds = elapsedTime % 60;
-	var timeToPlayMinutes = serverQueue.songs[0].duration.minutes - elapsedMinutes;
-	var TimeToPlaySeconds = serverQueue.songs[0].duration.seconds - elapsedSeconds;
+	var timeToPlayMinutes = Math.trunc(serverQueue.songs[0].duration.minutes - elapsedMinutes);
+	var TimeToPlaySeconds = Math.trunc(serverQueue.songs[0].duration.seconds - elapsedSeconds);
 
 	const queueTitle = `Songs in queue (loop **${serverQueue.looping ? 'enabled' : 'disabled'}** - lock **${serverQueue.locked ? 'enabled' : 'disabled'}**) ${!serverQueue.playing  ? `**PAUSED**` : ``}:`;
 
