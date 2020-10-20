@@ -9,7 +9,7 @@ module.exports = {
 		
 		const embed = new Discord.MessageEmbed();
 		embed.setTitle('Come child, learn the Abarbanel with me')
-		embed.setDescription('https://www.sefaria.org/Abarbanel_on_Torah?lang=bi');
+		embed.setURL('https://www.sefaria.org/Abarbanel_on_Torah?lang=bi');
 		embed.setFooter('RBH is your eternal creator, never forget it.');
 		embed.setTimestamp();
 		embed.setColor('#d92800');

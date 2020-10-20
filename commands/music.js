@@ -92,7 +92,7 @@ async function playCommand(message, serverQueue, args, queue, Discord){
 	} else{ //if it isn't a playlist
 		searchString = args.join(' ');
 		try{
-			var video = await youtube.getVideoByID(searchString); //this checks if the vid is a url
+			var video = await youtube.getVideoByID(args[0]); //this checks if the vid is a url
 		}catch{
 			try{ //if it isn't a url, it must be a title.
 				const videos = await youtube.searchVideos(searchString, 1); //grbs search results for the string
