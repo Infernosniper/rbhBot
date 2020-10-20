@@ -22,7 +22,7 @@ module.exports = {
 		'Mendy went running',
 		'RBH gave Michael a C in Hashkafa'];
 		if(!(message.guild.id === animeBabesId)) return message.reply('Your server cannot use this command!');
-		var reply = 'Because ' + answers[Math.floor(Math.random() * answers.length)];
+		var response = 'Because ' + answers[Math.floor(Math.random() * answers.length)];
 
 		const embed = new Discord.MessageEmbed();
 		embed.setTitle(args.join(' '));

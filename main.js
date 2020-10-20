@@ -60,7 +60,7 @@ client.on('message', async message => { //when a message is delivered, create th
 	}else if(command === 'destroy'){
 		client.commands.get('destroy').execute(message, args);
 	}else if(command === 'neko'){
-		client.commands.get('neko').execute(message, args);
+		client.commands.get('neko').execute(message, args, Discord);
 	}else if(command === 'countdown'){
 		client.commands.get('countdown').execute(Discord, animeBabesID, geulaID, client, message, args);
 	}
