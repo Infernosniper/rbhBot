@@ -5,7 +5,7 @@ module.exports = {
 		if(message.member.voice.channel){ //if the user is in a channel
 			if(serverQueue) serverQueue.voiceChannel = message.member.voice.channel;
 			message.member.voice.channel.join();
-			return message.channel.send('Joined!');
+			return message.react('👍');
 		}else{
 			message.reply('You must be in a voice channel to use that command!');
 		}

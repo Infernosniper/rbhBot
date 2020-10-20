@@ -1,7 +1,7 @@
 module.exports = {
 	name: 'why',
 	description: 'Answers your deepest questions. Format of \"rbh why <rest_of_question>\".',
-	execute(message, args, animeBabesId){
+	execute(message, args, animeBabesId, Discord){
 		var answers = [ //array of potential answers
 		'eitan hates the jews...',
 		'dave doesn\'t like michael for some reason',
@@ -19,8 +19,18 @@ module.exports = {
 		'I\'m busy devouring worlds',
 		'Fair Life is the best',
 		'Eitan hates learning kitzur',
-		'Mendy went running'];
+		'Mendy went running',
+		'RBH gave Michael a C in Hashkafa'];
 		if(!(message.guild.id === animeBabesId)) return message.reply('Your server cannot use this command!');
-		message.reply("Why " + args.join(' ') + ' Because ' + answers[Math.floor(Math.random() * answers.length)]);
+		var reply = 'Because ' + answers[Math.floor(Math.random() * answers.length)];
+
+		const embed = new Discord.MessageEmbed();
+		embed.setTitle(args.join(' '));
+		embed.setColor('#d92800');
+		embed.setFooter('RBH is your eternal creator, never forget it.')
+		embed.setTimestamp();
+		embed.setDescription(response);
+
+		message.channel.send(embed);
 	}
 }

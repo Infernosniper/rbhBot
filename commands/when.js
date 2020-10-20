@@ -1,7 +1,7 @@
 module.exports = {
 	name: 'when',
 	description: 'Answers your deepes "when" questions. Format of \"rbh when <rest_of_question>\"',
-	execute(message, args, animeBabesId){
+	execute(message, args, animeBabesId, Discord){
 		var answers = [ //array of potential answers
 		'david can grow a beard',
 		'Clarke wears tzitzit',
@@ -21,6 +21,15 @@ module.exports = {
 		'Dave stops bailing'
 		]
 		if(!(message.guild.id === animeBabesId)) return message.reply('Your server cannot use this command!');
-		message.reply("When " + args.join(' ') + ' When ' + answers[Math.floor(Math.random() * answers.length)]);
+		var response = 'When ' + answers[Math.floor(Math.random() * answers.length)];
+
+		const embed = new Discord.MessageEmbed();
+		embed.setTitle(args.join(' '));
+		embed.setColor('#d92800');
+		embed.setFooter('RBH is your eternal creator, never forget it.')
+		embed.setTimestamp();
+		embed.setDescription(response);
+
+		message.channel.send(embed);
 	}
 }
