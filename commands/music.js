@@ -155,7 +155,7 @@ function playingCommand(message, serverQueue, Discord){
 	embed.setColor(embedColor);
 	embed.setFooter('RBH is your eternal creator, never forget it');
 	embed.setTimestamp();
-	embed.addDescription(nowPlayingText);
+	embed.setDescription(nowPlayingText);
 
 	message.channel.send(embed);
 }
