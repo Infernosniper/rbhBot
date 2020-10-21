@@ -30,7 +30,6 @@ module.exports = {
 		else if(command === 'lock') return lockCommand(message, serverQueue);
 		else if(command === 'remove') return removeCommand(message, serverQueue, args, queue, Discord);
 		else if(command === 'move') return moveCommand(message, serverQueue, args, queue, Discord);
-		else if(command === 'back') return backCommand(message, serverQueue, queu, Discord);
 		return commandsList(message, Discord);
 	}
 }
@@ -117,7 +116,6 @@ function stopCommand(message, serverQueue, queue){
 	if(!serverQueue) return message.reply('There are no songs in the queue!');
 	if(message.member.voice.channel != serverQueue.voiceChannel) return message.reply('You are not in my voice channel!');
 
-	for(var i = 0; i < serverQueue.songs.length; i++) previousSongs.push(serverQueue.songs[i]); //pushes every song in the queue to the previous songs array
 	serverQueue.songs = [];
 	serverQueue.connection.dispatcher.end();
 	return message.react('⏹️');
@@ -186,7 +184,6 @@ function skipCommand(message, serverQueue){
 	if(!serverQueue) return message.replu('There are no songs in the queue!');
 	if(message.member.voice.channel != serverQueue.voiceChannel) return message.reply('You are not in my voice channel!');
 
-	previousSongs.push(serverQueue.songs[0]);
 	serverQueue.connection.dispatcher.end();
 	return message.react('⏭️');
 }
@@ -298,37 +295,6 @@ function lockCommand(message, serverQueue){
 	return message.react('🔒');
 }
 
-async function backCommand(message, serverQueue, queue, Discord){
-	if(!message.member.voice.channel) return message.reply('You are not in a voice channel!');
-	if(previousSongs.checkEmpty() === undefined) return message.reply('There are no songs to go back to!');
-
-	var grabbedSong = previousSongs.grabPrevious();
-
-	if(serverQueue){
-		if(message.member.voice.channel != serverQueue.voiceChannel) return message.reply('You are not in my voice channel!');
-		serverQueue.songs.splice(0,0, grabbedSong);
-		try{
-			play(message, serverQueue.songs[0], queue, Discord);
-			return message.react('⏮');
-		}catch(error){
-			console.log(`There was an error, back command: ${error}`);
-			message.channel.send('There was an eror grabbing previous song.');
-			if(serverQueue) queue.delete(message.guild.id);
-		}
-	}else{
-		try{
-			await handleVideo(grabbedSong, message, message.member.voice.channel, queue, Discord);
-
-			return message.react('⏮');
-		}catch(error){
-			console.log('There was an error with handle video in back command: ${error}');
-			message.channel.send('There was an error grabbing previous song! Sorry...');
-			if(serverQueue) queue.delete(message.guild.id);
-		}
-	}
-	return undefined;
-}
-
 function commandsList(message, Discord){
 	const embed = new Discord.MessageEmbed();
 	embed.setTitle('Music Commands');
@@ -345,7 +311,6 @@ function commandsList(message, Discord){
 		{name: 'Remove', value: 'Removes the selected song from the queue. Follows the format "rbh remove <position_in_queue>".'},
 		{name: 'Pause/Unpause', value: 'Pauses and unpauses the current song. Follows the format "rbh pause" to pause. Follows the formats "rbh unpause", "rbh resume", and "rbh play" to unpause.'},
 		{name: 'Restart', value: 'Restarts the current song. Follows the format "rbh restart".'},
-		{name: 'Back', value: 'Goes back to the previous song in the queue. Follows the format "rbh back". WIP'},
 		{name: 'Loop', value: 'Toggles looping of the current songs in the queue. Follows the format "rbh loop" to toggle. Current status is visible in "rbh queue"'},
 		{name: 'Lock', value: 'Usable only by administrators. Locks the queue from being manipulated by non-administrators. Follows the format "rbh lock" to toggle. Current status is visible in "rbh queue".'}
 	);
@@ -385,7 +350,7 @@ async function handleVideo(video, message, voiceChannel, queue, Discord, playlis
 		try{
 			var connection = await voiceChannel.join();
 			queueConstruct.connection = connection;
-			play(message, queueConstruct.songs[0], queue, serverQueue, Discord)
+			play(message, queueConstruct.songs[0], queue, false, Discord)
 		}catch (error) {
 			console.log(`There was an error connecting to the voice channel: ${error}`);
 			queue.delete(message.guild.id);
