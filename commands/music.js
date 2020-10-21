@@ -1,7 +1,6 @@
 const Util = require('discord.js'); //used only for an escape markdown util
 const ytdl = require('ytdl-core'); //primary music pulling
 const ytpl = require('ytpl');
-const previousSongs = require('../otherFiles/previousSongs.js'); //a js file with an array of previous songs in it
 const SYA = require('simple-youtube-api'); //to setup the youtube api
 const youtube = new SYA('AIzaSyB8EuU8tU7QKTyB93X0leDDA-JNobN7Gh4'); //create our instance of the youtube api
 const arrayMove = require('array-move'); //for moving the order of arrays easily
@@ -123,6 +122,7 @@ function stopCommand(message, serverQueue, queue){
 
 function queueCommand(message, serverQueue, Discord){
 	if(!serverQueue) return message.reply('There are no songs in the queue!');
+
 	var elapsedTime = Math.trunc(serverQueue.connection.dispatcher.streamTime / 1000);
 	var elapsedMinutes = Math.trunc(elapsedTime / 60);
 	var elapsedSeconds = elapsedTime % 60;
@@ -350,7 +350,7 @@ async function handleVideo(video, message, voiceChannel, queue, Discord, playlis
 		try{
 			var connection = await voiceChannel.join();
 			queueConstruct.connection = connection;
-			play(message, queueConstruct.songs[0], queue, false, Discord)
+			await play(message, queueConstruct.songs[0], queue, false, Discord)
 		}catch (error) {
 			console.log(`There was an error connecting to the voice channel: ${error}`);
 			queue.delete(message.guild.id);
@@ -385,10 +385,7 @@ function play(message, song, queue, restarted = false, Discord){
 	const dispatcher = serverQueue.connection.play(ytdl(song.url))
 		.on('finish', () => {
 			if(serverQueue.looping) serverQueue.songs = arrayMove(serverQueue.songs, 0, serverQueue.songs.length - 1);
-			else{
-				previousSongs.push(serverQueue.songs[0]);
-				serverQueue.songs.shift();
-			}
+			else serverQueue.songs.shift();
 			try{
 				play(message, serverQueue.songs[0], queue, false, Discord);				
 			}catch(error){
