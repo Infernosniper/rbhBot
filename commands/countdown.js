@@ -9,7 +9,7 @@ module.exports = {
 		let channel = client.guilds.cache.get(animeBabesID).channels.cache.get(geulaID);
 
 		if(!message){
-			let scheduledMessage = new cron.CronJob('20 8 * * *', () => {
+			let scheduledMessage = new cron.CronJob('20 12 * * *', () => {
 				channel.send(`@everyone Countdown until you are all out of my life forever: ${countDown(new Date(2021,6,2,8 + UTC,20)).toString()}`);
 			})
 
