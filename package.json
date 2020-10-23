@@ -21,7 +21,7 @@
     "moment-countdown": "0.0.3",
     "opusscript": "0.0.7",
     "simple-youtube-api": "^5.2.1",
-    "ytdl-core": "^3.2.2",
+    "ytdl-core": "^3.4.2",
     "ytpl": "^1.0.1"
   }
 }

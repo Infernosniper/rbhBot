@@ -18,6 +18,7 @@ module.exports = {
 		
 		//command handler
 		if(command === 'play') return playCommand(message, serverQueue, args, queue, Discord);
+		else if(command === 'search') return searchCommand(message, serverQueue, args, queue, Discord);
 		else if(command === 'stop') return stopCommand(message, serverQueue, queue);
 		else if(command === 'queue') return queueCommand(message, serverQueue, Discord);
 		else if(command === 'playing') return playingCommand(message, serverQueue, Discord);
@@ -90,7 +91,7 @@ async function playCommand(message, serverQueue, args, queue, Discord){
 	} else{ //if it isn't a playlist
 		searchString = args.join(' ');
 		try{
-			var video = await youtube.getVideoByID(args[0]); //this checks if the vid is a url
+			var video = await youtube.getVideo(args[0]); //this checks if the vid is a url
 		}catch{
 			try{ //if it isn't a url, it must be a title.
 				const videos = await youtube.searchVideos(searchString, 1); //grbs search results for the string
@@ -110,6 +111,50 @@ async function playCommand(message, serverQueue, args, queue, Discord){
 	}
 }
 
+async function searchCommand(message, serverQueue, args, queue, Discord){
+	if(!message.member.voice.channel) return message.reply('You are not in a voice channel!'); //checks if in a voice channel
+
+	searchString = args.join(' ');
+	try{
+		const videos = await youtube.searchVideos(searchString, 10);
+		const embed = new Discord.MessageEmbed();
+		embed.setTitle('Song Selection');
+		embed.setColor(embedColor);
+		embed.setFooter('RBH is your eternal creator, never forget it');
+		embed.setTimestamp();
+
+		var index = 0;
+		for(const curVid of videos) {
+			embed.addField('\u200b', `**${++index}** - ${curVid.title}`);
+		}
+		embed.addField('\u200b', `**Select a song by replying with a number 1-10.**`);
+
+		message.channel.send(embed);
+
+		try{
+			var response = await message.channel.awaitMessages(msg => msg.content > 0 && msg.content < 11, {
+				max: 1,
+				time: 30000,
+				errors: ['time']
+			});
+		}catch{
+			return message.channel.send('An invalid selection was made!');
+		}
+		const videoIndex = parseInt(response.first().content)
+		const video = await youtube.getVideoByID(videos[videoIndex - 1].id);
+
+		try{
+			return handleVideo(video, message, message.member.voice.channel, queue, Discord);
+		}catch(error){
+			console.log(error);
+			message.channel.send('Error playing song. Please try again!');
+			return queue.delete(message.guild.id);
+		}
+	}catch(error) {
+		return message.channel.send('No search results found!');
+	}
+}
+
 function stopCommand(message, serverQueue, queue){
 	if(!message.member.voice.channel) return message.reply('You are not in a voice channel!');
 	if(!serverQueue) return message.reply('There are no songs in the queue!');
@@ -126,8 +171,16 @@ function queueCommand(message, serverQueue, Discord){
 	var elapsedTime = Math.trunc(serverQueue.connection.dispatcher.streamTime / 1000);
 	var elapsedMinutes = Math.trunc(elapsedTime / 60);
 	var elapsedSeconds = elapsedTime % 60;
-	var timeToPlayMinutes = Math.trunc(serverQueue.songs[0].duration.minutes - elapsedMinutes);
-	var TimeToPlaySeconds = Math.trunc(serverQueue.songs[0].duration.seconds - elapsedSeconds);
+
+	var totalTimeCurrent = serverQueue.songs[0].duration.hours * 3600 + serverQueue.songs[0].duration.minutes * 60 + serverQueue.songs[0].duration.seconds;
+	var timeToPlayHours = 0;
+	var timeToPlayMinutes = Math.trunc(totalTimeCurrent / 60 - elapsedMinutes);
+	var TimeToPlaySeconds = Math.trunc((totalTimeCurrent - elapsedSeconds) % 60);
+	if(totalTimeCurrent % 60 < elapsedSeconds) timeToPlayMinutes--;
+	while(timeToPlayMinutes > 60){
+		timeToPlayHours++;
+		timeToPlayMinutes -= 60;
+	}
 
 	const queueTitle = `Songs in queue (loop **${serverQueue.looping ? 'enabled' : 'disabled'}** - lock **${serverQueue.locked ? 'enabled' : 'disabled'}**) ${!serverQueue.playing  ? `**PAUSED**` : ``}:`;
 
@@ -144,16 +197,21 @@ function queueCommand(message, serverQueue, Discord){
 			embed.setTitle(`Songs in queue cont. :`);
 		}
 		//adds the title, durations, and time to play to the queueList string
-		var nextEntry = `**${serverQueue.songs[i].title}** - ${serverQueue.songs[i].duration.hours > 0 ? `${serverQueue.songs[i].duration.hours}:` : ``}${String(serverQueue.songs[i].duration.minutes).length === 1 ? `0` : ``}${serverQueue.songs[i].duration.minutes}:${String(serverQueue.songs[i].duration.seconds).length === 1 ? `0` : ``}${serverQueue.songs[i].duration.seconds} - ${i == 0 ? 'Now playing' : `Time to play: ${timeToPlayMinutes}:${String(TimeToPlaySeconds).length === 1 ? `0` : ``}${TimeToPlaySeconds}`}\n`
+		var nextEntry = `**${serverQueue.songs[i].title}** - ${serverQueue.songs[i].duration.hours > 0 ? `${String(serverQueue.songs[i].duration.hours).length === 1 ? `0` : ``}${serverQueue.songs[i].duration.hours}:` : ``}${String(serverQueue.songs[i].duration.minutes).length === 1 ? `0` : ``}${serverQueue.songs[i].duration.minutes}:${String(serverQueue.songs[i].duration.seconds).length === 1 ? `0` : ``}${serverQueue.songs[i].duration.seconds} - ${i == 0 ? 'Now playing' : `Time to play: ${timeToPlayHours > 0 ? `${String(timeToPlayHours).length === 1 ? `0` : ``}${timeToPlayHours}:` : ``}${String(timeToPlayMinutes).length === 1 ? `0`: ``}${timeToPlayMinutes}:${String(TimeToPlaySeconds).length === 1 ? `0` : ``}${TimeToPlaySeconds}`}\n`
 		embed.addField(`Song ${i + 1}`, nextEntry);
 
 		if(i != 0){
+			timeToPlayHours += serverQueue.songs[i].duration.hours;
 			timeToPlayMinutes += serverQueue.songs[i].duration.minutes;
 			TimeToPlaySeconds += serverQueue.songs[i].duration.seconds;
 
 			if(TimeToPlaySeconds >= 60){//when the seconds counter reaches 60, bump up the minutes counter and remove 60 from seconds
 				timeToPlayMinutes ++;
 				TimeToPlaySeconds -= 60;
+			}
+			if(timeToPlayMinutes > 60){
+				timeToPlayHours++;
+				timeToPlayMinutes -= 60;
 			}
 		}
 	}
@@ -167,7 +225,7 @@ function playingCommand(message, serverQueue, Discord){
 	var elapsedMinutes = Math.trunc(elapsedTime / 60);
 	var elapsedSeconds = elapsedTime % 60;
 
-	var nowPlayingText = `**${serverQueue.songs[0].title}** - ${String(elapsedMinutes).length === 1 ? '0' : ''}${elapsedMinutes}:${String(elapsedSeconds).length === 1 ? '0' : ''}${elapsedSeconds}/${String(serverQueue.songs[0].duration.minutes).length === 1 ? '0' : ''}${serverQueue.songs[0].duration.minutes}:${String(serverQueue.songs[0].duration.seconds).length === 1 ? '0' : ''}${serverQueue.songs[0].duration.seconds}`;
+	var nowPlayingText = `**${serverQueue.songs[0].title}** - ${String(elapsedMinutes).length === 1 ? '0' : ''}${elapsedMinutes}:${String(elapsedSeconds).length === 1 ? '0' : ''}${elapsedSeconds}/${serverQueue.songs[0].duration.hours > 0 ? `${String(serverQueue.songs[0].duration.hours).length === 1 ? `0` : ``}${serverQueue.songs[0].duration.hours}:` : ``}${String(serverQueue.songs[0].duration.minutes).length === 1 ? '0' : ''}${serverQueue.songs[0].duration.minutes}:${String(serverQueue.songs[0].duration.seconds).length === 1 ? '0' : ''}${serverQueue.songs[0].duration.seconds}`;
 	
 	const embed = new Discord.MessageEmbed();
 	embed.setTitle(`Now Playing${!serverQueue.playing ? ` **PAUSED**` : ``}`);
@@ -179,12 +237,12 @@ function playingCommand(message, serverQueue, Discord){
 	message.channel.send(embed);
 }
 
-function skipCommand(message, serverQueue){
+async function skipCommand(message, serverQueue){
 	if(!message.member.voice.channel) return message.reply('You are not in a voice channel!');
 	if(!serverQueue) return message.replu('There are no songs in the queue!');
 	if(message.member.voice.channel != serverQueue.voiceChannel) return message.reply('You are not in my voice channel!');
 
-	serverQueue.connection.dispatcher.end();
+	await serverQueue.connection.dispatcher.end();
 	return message.react('⏭️');
 }
 
@@ -303,8 +361,9 @@ function commandsList(message, Discord){
 	embed.setTimestamp();
 	embed.addFields(
 		{name: 'Play', value: `Plays a song based on input. Follows the format "rbh <arg>" and accepts a title, url, or playlist url. **Note**: When using a playlist URL, by default I will only add the first 5 songs of the playlist to the queue. To add a different number of songs to the queue, type "rbh play <playlist_url> <num_songs_to_add>". If you want random songs from a playlist, use "rbh play <playlist_url> random". You cannot combine keyboard random and <num_songs> modifiers.`},
+		{name: 'Search', value: 'Searches for a song. Similar to play command, except I return a list of choices and you select the song. Follows the format "rbh search <title>".'},
 		{name: 'Queue', value: 'Displays the queue of songs. Follows the format "rbh queue".'},
-		{name: 'Playing', value: 'Displays the current song that is playing. Follows the format "rbh playling".'},
+		{name: 'Playing', value: 'Displays the current song that is playing. Follows the format "rbh playing".'},
 		{name: 'Stop', value: 'Stops the current song and clears the queue. Follows the format "rbh stop".'},
 		{name: 'Skip', value: 'Skips the current song. Follows the format "rbh skip".'},
 		{name: 'Move', value: 'Moves the song selected to a chosen position in the queue. Follows the format "rbh move <current_position> <desired_position>".'},
@@ -382,28 +441,51 @@ function play(message, song, queue, restarted = false, Discord){
 		return undefined;
 	}
 
-	const dispatcher = serverQueue.connection.play(ytdl(song.url))
-		.on('finish', () => {
-			if(serverQueue.looping) serverQueue.songs = arrayMove(serverQueue.songs, 0, serverQueue.songs.length - 1);
-			else serverQueue.songs.shift();
-			try{
-				play(message, serverQueue.songs[0], queue, false, Discord);				
-			}catch(error){
-				console.log(`.on finish: ${error}`);
-				serverQueue.songs.shift();
-				play(message, serverQueue.songs[0], queue, false, Discord);
-			}
-		})
-		.on('error', error => {
-			console.log(error);
-		})
+	try{
+		var dispatcher = serverQueue.connection.play(ytdl(song.url))
+			.on('finish', () => {
+				if(serverQueue.looping) serverQueue.songs = arrayMove(serverQueue.songs, 0, serverQueue.songs.length - 1);
+				else serverQueue.songs.shift();
+				try{
+					play(message, serverQueue.songs[0], queue, false, Discord);				
+				}catch(error){
+					console.log(`.on finish: ${error}`);
+					serverQueue.songs.shift();
+					play(message, serverQueue.songs[0], queue, false, Discord);
+				}
+			})
+			.on('error', error => {
+				console.log(error);
+			})
+	}catch{ //half the time, the error happens randomly. so it gives it a second attempt
+		try{
+			console.log('attempt 2')
+			var dispatcher = serverQueue.connection.play(ytdl(song.url))
+				.on('finish', () => {
+					if(serverQueue.looping) serverQueue.songs = arrayMove(serverQueue.songs, 0, serverQueue.songs.length - 1);
+					else serverQueue.songs.shift();
+					try{
+						play(mesage, serverQueue.songs[0], queue, false, Discord);
+					}catch(error){
+						console.log(`.on finish: ${error}`);
+						serverQueue.songs.shift();
+						play(message, serverQueue.songs[0], queue, false, Discord);
+					}
+				})
+		}catch(error){
+			console.log(`Play error after second attempt: ${error}`);
+			serverQueue.songs.shift();
+			play(message, server.songs[0], queue, false, Discord);	
+		}
+	}
 
 	dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
 
 	var NP = `Now playing **${song.title}**`;
 
 	const embed = new Discord.MessageEmbed();
-	embed.setDescription(NP);
+	embed.setTitle(NP);
+	embed.setURL(song.url);
 	embed.setColor(embedColor);
 	embed.setFooter('RBH is your eternal creator, never forget it.');
 	embed.setTimestamp();

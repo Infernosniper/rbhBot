@@ -10,7 +10,7 @@ module.exports = {
 
 		if(!message){
 			let scheduledMessage = new cron.CronJob('20 12 * * *', () => {
-				channel.send(`@everyone Countdown until you are all out of my life forever: ${countDown(new Date(2021,6,2,8 + UTC,20)).toString()}`);
+				channel.send(`@everyone Countdown until you are all out of my life forever: ${countDown(new Date(2021,5,2,8,20)).toString()}`);
 			})
 
 			scheduledMessage.start();
@@ -23,7 +23,7 @@ module.exports = {
 			embed.setFooter('RBH is your eternal creator, never forget it.');
 			embed.setTimestamp();
 			embed.addFields(
-				{name: 'Until you are all out of my life forever', value: countDown(new Date(2021,6,2,8 + UTC,20)).toString()},
+				{name: 'Until you are all out of my life forever', value: countDown(new Date(2021,5,2,8,20)).toString()},
 			);
 
 			return channel.send(embed);
