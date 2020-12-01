@@ -222,10 +222,15 @@ function playingCommand(message, serverQueue, Discord){
 	if(!serverQueue) return message.reply('There is no song playing!');
 
 	var elapsedTime = Math.trunc(serverQueue.connection.dispatcher.streamTime / 1000);
+	var elapsedHours = 0;
 	var elapsedMinutes = Math.trunc(elapsedTime / 60);
 	var elapsedSeconds = elapsedTime % 60;
+	while(elapsedMinutes > 60){
+		elapsedHours++;
+		elapsedMinutes -= 60;
+	}
 
-	var nowPlayingText = `**${serverQueue.songs[0].title}** - ${String(elapsedMinutes).length === 1 ? '0' : ''}${elapsedMinutes}:${String(elapsedSeconds).length === 1 ? '0' : ''}${elapsedSeconds}/${serverQueue.songs[0].duration.hours > 0 ? `${String(serverQueue.songs[0].duration.hours).length === 1 ? `0` : ``}${serverQueue.songs[0].duration.hours}:` : ``}${String(serverQueue.songs[0].duration.minutes).length === 1 ? '0' : ''}${serverQueue.songs[0].duration.minutes}:${String(serverQueue.songs[0].duration.seconds).length === 1 ? '0' : ''}${serverQueue.songs[0].duration.seconds}`;
+	var nowPlayingText = `**${serverQueue.songs[0].title}** - ${elapsedHours > 0 ? `${String(elapsedHours).length === 1 ? `0` : ``}${elapsedHours}:` : ``}${String(elapsedMinutes).length === 1 ? '0' : ''}${elapsedMinutes}:${String(elapsedSeconds).length === 1 ? '0' : ''}${elapsedSeconds}/${serverQueue.songs[0].duration.hours > 0 ? `${String(serverQueue.songs[0].duration.hours).length === 1 ? `0` : ``}${serverQueue.songs[0].duration.hours}:` : ``}${String(serverQueue.songs[0].duration.minutes).length === 1 ? '0' : ''}${serverQueue.songs[0].duration.minutes}:${String(serverQueue.songs[0].duration.seconds).length === 1 ? '0' : ''}${serverQueue.songs[0].duration.seconds}`;
 	
 	const embed = new Discord.MessageEmbed();
 	embed.setTitle(`Now Playing${!serverQueue.playing ? ` **PAUSED**` : ``}`);
@@ -340,7 +345,8 @@ function loopCommand(message, serverQueue){
 	if(message.member.voice.channel != serverQueue.voiceChannel) return message.reply('You are not in my voice channel!');
 
 	serverQueue.looping = !serverQueue.looping;
-	return message.react('🔁');
+	if(serverQueue.looping) return message.react('🔁');
+	return message.react('🚫');
 }
 
 function lockCommand(message, serverQueue){
@@ -360,7 +366,7 @@ function commandsList(message, Discord){
 	embed.setFooter('RBH is your eternal creator, never forget it.');
 	embed.setTimestamp();
 	embed.addFields(
-		{name: 'Play', value: `Plays a song based on input. Follows the format "rbh <arg>" and accepts a title, url, or playlist url. **Note**: When using a playlist URL, by default I will only add the first 5 songs of the playlist to the queue. To add a different number of songs to the queue, type "rbh play <playlist_url> <num_songs_to_add>". If you want random songs from a playlist, use "rbh play <playlist_url> random". You cannot combine keyboard random and <num_songs> modifiers.`},
+		{name: 'Play', value: `Plays a song based on input. Follows the format "rbh <arg>" and accepts a title, url, or playlist url. **Note**: When using a playlist URL, by default I will only add the first 5 songs of the playlist to the queue. To add a different number of songs to the queue, type "rbh play <playlist_url> <num_songs_to_add>". If you want random songs from a playlist, use "rbh play <playlist_url> random". You cannot combine random and <num_songs> modifiers.`},
 		{name: 'Search', value: 'Searches for a song. Similar to play command, except I return a list of choices and you select the song. Follows the format "rbh search <title>".'},
 		{name: 'Queue', value: 'Displays the queue of songs. Follows the format "rbh queue".'},
 		{name: 'Playing', value: 'Displays the current song that is playing. Follows the format "rbh playing".'},
@@ -433,7 +439,6 @@ async function handleVideo(video, message, voiceChannel, queue, Discord, playlis
 
 function play(message, song, queue, restarted = false, Discord){
 	const serverQueue = queue.get(message.guild.id);
-	serverQueue.voiceChannel = message.member.voice.channel;
 
 	if(!song){
 		serverQueue.voiceChannel.leave();

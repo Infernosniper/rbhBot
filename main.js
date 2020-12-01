@@ -5,11 +5,10 @@ const client = new Discord.Client(); //this is the bot
 const prefix = 'rbh'; //prefix for search commands
 const queue = new Map();
 
-require('moment-countdown');
-
 const animeBabesID = '323526804872757248';
 const geulaID = '474336985306234890';
-const gatsbyServerID = '701653446050447461';
+const musicChannel = '771014340635656224';
+
 
 client.commands = new Discord.Collection(); //collection of commands
 const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js')); //finding the files in the commands folder
@@ -22,20 +21,15 @@ for(const file of commandFiles){ //goes through the commands folder and finds th
 client.once('ready', () => { //when rbh is ready, say so and set his activity
 	console.log('RBH is online!')
 	client.user.setActivity('rbh help');
-	client.commands.get('countdown').execute(Discord, animeBabesID, geulaID, client);
 });
 
 client.on('message', async message => { //when a message is delivered, create the args and find which command is called
-	if(message.content.startsWith('-') && message.guild.id === animeBabesID) return message.reply('It hurts me when you use other bots...');
+	if(message.content.startsWith('-') && message.guild.id === animeBabesID) return message.react('👎');
 	if(!message.content.toLowerCase().startsWith(prefix) || message.author.bot) return;
 
-	const args = message.content.slice(prefix.length + 1).split(/ +/); //creates the aray for arguements
-	const command = args.shift().toLowerCase(); //grabs the command for below
-	const serverQueue = queue.get(message.guild.id); // creates the server queue for music
-
-	if(message.guild.id === gatsbyServerID){
-		if(!message.member.hasPermission('ADMINISTRATOR')) return message.reply('Only Admins can use me in this server for now!');
-	}
+	const args = message.content.slice(prefix.length + 1).split(/ +/); //creates the aray of arguements
+	const command = args.shift().toLowerCase(); //grabs the command which is the second word in the message. used for handler
+	const serverQueue = queue.get(message.guild.id); // gets the server's queue (for music commands);
 
 	if(command === "we"){ //all the commands
 		client.commands.get('we').execute(message, args, animeBabesID);
@@ -54,7 +48,8 @@ client.on('message', async message => { //when a message is delivered, create th
 	}else if(command === 'why'){
 		client.commands.get('why').execute(message, args, animeBabesID, Discord);
 	}else if(command === 'lock' || command === 'search' || command === 'play' || command === 'stop' || command === 'skip' || command === 'queue' || command === 'remove' || command === 'move' || command === 'playing' || command === 'music' || command === 'restart' || command === 'pause' || command === 'resume' || command === 'unpause' || command === 'loop'){
-		client.commands.get('music').execute(command, message, args, queue, serverQueue, Discord);
+		if(message.guild.id != animeBabesID || (message.guild.id === animeBabesID && message.channel === client.guilds.cache.get(animeBabesID).channels.cache.get(musicChannel))) client.commands.get('music').execute(command, message, args, queue, serverQueue, Discord);
+		else message.reply('You can only use RBH music functionality in <#771014340635656224>!');
 	}else if(command === 'when'){
 		client.commands.get('when').execute(message, args, animeBabesID, Discord);
 	}else if(command === 'destroy'){
@@ -62,7 +57,11 @@ client.on('message', async message => { //when a message is delivered, create th
 	}else if(command === 'neko'){
 		client.commands.get('neko').execute(message, args, Discord);
 	}else if(command === 'countdown'){
-		client.commands.get('countdown').execute(Discord, animeBabesID, geulaID, client, message, args);
+		client.commands.get('countdown').execute(client, animeBabesID, geulaID, command, message, args);
+	}else if(command === 'zoom'){
+		client.commands.get('zoom').execute(message, args, client);
+	}else if(command === 'circ'){
+		client.commands.get('circ').execute(message, args, Discord);
 	}
 });
 

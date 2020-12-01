@@ -20,7 +20,8 @@ module.exports = {
 		    	embed.addField(`${props.name.charAt(0).toUpperCase()}${props.name.substring(1)}`, props.description);
 		    });		
 
-		    message.channel.send(embed);		     
+			message.react('👍');
+		    return message.author.send(embed);		     
 		});
 	}
 }
