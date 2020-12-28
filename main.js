@@ -5,6 +5,9 @@ const client = new Discord.Client(); //this is the bot
 const prefix = 'rbh'; //prefix for search commands
 const queue = new Map();
 
+const cron = require('cron');
+const countDown = require('countdown');
+
 const animeBabesID = '323526804872757248';
 const geulaID = '474336985306234890';
 const musicChannel = '771014340635656224';
@@ -48,8 +51,9 @@ client.on('message', async message => { //when a message is delivered, create th
 	}else if(command === 'why'){
 		client.commands.get('why').execute(message, args, animeBabesID, Discord);
 	}else if(command === 'lock' || command === 'search' || command === 'play' || command === 'stop' || command === 'skip' || command === 'queue' || command === 'remove' || command === 'move' || command === 'playing' || command === 'music' || command === 'restart' || command === 'pause' || command === 'resume' || command === 'unpause' || command === 'loop'){
-		if(message.guild.id != animeBabesID || (message.guild.id === animeBabesID && message.channel === client.guilds.cache.get(animeBabesID).channels.cache.get(musicChannel))) client.commands.get('music').execute(command, message, args, queue, serverQueue, Discord);
-		else message.reply('You can only use RBH music functionality in <#771014340635656224>!');
+		//if(message.guild.id != animeBabesID || (message.guild.id === animeBabesID && message.channel === client.guilds.cache.get(animeBabesID).channels.cache.get(musicChannel))) client.commands.get('music').execute(command, message, args, queue, serverQueue, Discord);
+		//else message.reply('You can only use RBH music functionality in <#771014340635656224>!');
+		message.reply('RBH Music commands have been temporarily disabled. They will be brought back online when the Rosh Yeshiva gets a chance to rework the code. Thanks!');
 	}else if(command === 'when'){
 		client.commands.get('when').execute(message, args, animeBabesID, Discord);
 	}else if(command === 'destroy'){
